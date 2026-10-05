@@ -1,0 +1,11 @@
+# Databricks Apps configuration
+command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+
+env:
+  # Stop the app after this many minutes without user activity. "0" disables.
+  # Use a small value such as "2" to test.
+  - name: AUTO_STOP_IDLE_MINUTES
+    value: "60"
+  # Optional hard cap on total runtime, in hours. "0" disables.
+  - name: AUTO_STOP_MAX_HOURS
+    value: "0"

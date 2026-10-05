@@ -1,0 +1,45 @@
+# Example Databricks Asset Bundle config. Adjust names and paths to your project.
+
+resources:
+  apps:
+    my_app:
+      name: my-app
+      source_code_path: ./
+      permissions:
+        # The app's own service principal needs CAN_MANAGE to stop itself.
+        # Find its application ID (a GUID) after the first deploy with:
+        #     databricks apps get my-app     -> service_principal_client_id
+        - level: CAN_MANAGE
+          service_principal_name: "<app-service-principal-application-id>"
+        # Whoever the start/stop jobs run as also needs CAN_MANAGE on the app.
+        - level: CAN_MANAGE
+          service_principal_name: "<job-run-as-identity>"
+
+  # On-demand start and stop jobs. No schedule: users click "Run now".
+  # With no cluster defined, the tasks run on serverless compute.
+  jobs:
+    app_start:
+      name: "Start my-app"
+      tasks:
+        - task_key: start
+          notebook_task:
+            notebook_path: ./notebooks/start_app.py
+            base_parameters:
+              app_name: my-app
+              warmup_seconds: "0"
+      permissions:
+        # Lets users trigger the job without permission on the app itself.
+        - level: CAN_MANAGE_RUN
+          group_name: "<app-users-group>"
+
+    app_stop:
+      name: "Stop my-app"
+      tasks:
+        - task_key: stop
+          notebook_task:
+            notebook_path: ./notebooks/stop_app.py
+            base_parameters:
+              app_name: my-app
+      permissions:
+        - level: CAN_MANAGE_RUN
+          group_name: "<app-users-group>"
